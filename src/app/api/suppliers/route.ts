@@ -1,0 +1,3 @@
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+export async function POST(req: Request){ const f=await req.formData(); await prisma.supplier.upsert({ where:{code:String(f.get("code"))}, update:{name:String(f.get("name")), emailList:String(f.get("emails")||"").split(",").map(x=>x.trim()).filter(Boolean), cycle:String(f.get("cycle")||""), deliveryTime:String(f.get("deliveryTime")||"").split(",").map(x=>x.trim()).filter(Boolean)}, create:{code:String(f.get("code")), name:String(f.get("name")), emailList:String(f.get("emails")||"").split(",").map(x=>x.trim()).filter(Boolean), cycle:String(f.get("cycle")||""), deliveryTime:String(f.get("deliveryTime")||"").split(",").map(x=>x.trim()).filter(Boolean)}}); redirect("/suppliers"); }

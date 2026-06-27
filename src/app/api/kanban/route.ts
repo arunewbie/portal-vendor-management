@@ -1,0 +1,3 @@
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+export async function POST(req: Request){ const f=await req.formData(); await prisma.kanban.upsert({ where:{kanbanNo:String(f.get("kanbanNo"))}, update:{partNo:String(f.get("partNo")), partName:String(f.get("partName")), qtyPerBox:Number(f.get("qtyPerBox")), supplierId:String(f.get("supplierId")), boxType:String(f.get("boxType")||"")}, create:{kanbanNo:String(f.get("kanbanNo")), partNo:String(f.get("partNo")), partName:String(f.get("partName")), qtyPerBox:Number(f.get("qtyPerBox")), supplierId:String(f.get("supplierId")), boxType:String(f.get("boxType")||"")}}); redirect("/kanban"); }

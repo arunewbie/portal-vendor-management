@@ -1,0 +1,6 @@
+import AppShell from "@/components/AppShell";
+import { prisma } from "@/lib/prisma";
+export default async function ManualOrderPage() {
+  const suppliers = await prisma.supplier.findMany({ orderBy: { name: "asc" } });
+  return <AppShell><div className="max-w-3xl"><h1 className="text-2xl font-bold">Manual Special Order</h1><p className="text-sm text-slate-500">Untuk urgent order, non-kanban, trial part, atau abnormal order.</p><form action="/api/orders/manual" method="post" className="card mt-6 grid gap-4 md:grid-cols-2"><select name="supplierId" className="input" required><option value="">Pilih Supplier</option>{suppliers.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select><input name="partNo" className="input" placeholder="Part No" required/><input name="partName" className="input" placeholder="Part Name"/><input name="qtyOrder" className="input" placeholder="Qty" type="number" required/><input name="deliveryDate" className="input" type="date" required/><input name="deliveryTime" className="input" type="time"/><textarea name="note" className="input md:col-span-2" placeholder="Remark"/><button className="btn-primary md:col-span-2">Create Manual Order</button></form></div></AppShell>
+}
