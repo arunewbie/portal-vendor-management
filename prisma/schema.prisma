@@ -1,0 +1,131 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+enum Role { ADMIN INTERNAL SUPPLIER }
+enum OrderType { KANBAN MANUAL }
+enum OrderStatus { OPEN ACCEPTED REJECTED PARTIAL DELAY CLOSED FORCE_CLOSED }
+enum CloseBy { SYSTEM USER }
+enum DayType { OPERATION HALF_DAY NON_OPERATION }
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  passwordHash String
+  name        String
+  role        Role
+  supplierId  String?
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Supplier {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  name         String
+  emailList    String[]
+  cycle        String?  // contoh 1-1-2
+  deliveryTime String[] // contoh ["08:00", "14:00"]
+  users        User[]
+  kanbans      Kanban[]
+  orders       Order[]
+  forecasts    Forecast[]
+  createdAt    DateTime @default(now())
+}
+
+model Kanban {
+  id          String   @id @default(cuid())
+  kanbanNo    String   @unique
+  partNo      String
+  partName    String
+  qtyPerBox   Int
+  supplierId  String
+  supplier    Supplier @relation(fields: [supplierId], references: [id])
+  storeAddress String?
+  boxType     String?
+  createdAt   DateTime @default(now())
+}
+
+model CalendarDay {
+  id        String   @id @default(cuid())
+  date      DateTime @unique
+  dayType   DayType  @default(OPERATION)
+  remarks   String?
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  orderNo      String      @unique
+  pdsNo        String?
+  orderType    OrderType   @default(KANBAN)
+  supplierId   String
+  supplier     Supplier    @relation(fields: [supplierId], references: [id])
+  kanbanNo     String?
+  partNo       String
+  partName     String?
+  qtyOrder     Int
+  qtyPerBox    Int?
+  deliveryDate DateTime
+  deliveryTime String?
+  cycle        String?
+  status       OrderStatus @default(OPEN)
+  closedBy     CloseBy?
+  closedReason String?
+  closedAt     DateTime?
+  createdAt    DateTime    @default(now())
+  plans        Plan[]
+  receivings   Receiving[]
+  notifications NotificationLog[]
+  histories    OrderHistory[]
+}
+
+model Plan {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id])
+  plannedQty  Int
+  plannedDate DateTime
+  note        String?
+  createdAt   DateTime @default(now())
+}
+
+model Receiving {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id])
+  receivedQty Int
+  receivedDate DateTime
+  note        String?
+  createdAt   DateTime @default(now())
+}
+
+model Forecast {
+  id          String   @id @default(cuid())
+  month       String   // YYYY-MM
+  supplierId  String
+  supplier    Supplier @relation(fields: [supplierId], references: [id])
+  partNo      String
+  forecastQty Int
+  createdAt   DateTime @default(now())
+  @@unique([month, supplierId, partNo])
+}
+
+model NotificationLog {
+  id         String   @id @default(cuid())
+  supplierId String
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  email      String
+  status     String
+  message    String?
+  sentAt     DateTime @default(now())
+}
+
+model OrderHistory {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  action    String
+  note      String?
+  createdBy String?
+  createdAt DateTime @default(now())
+}
