@@ -1,0 +1,2 @@
+orderNo,pdsNo,supplierCode,kanbanNo,partNo,partName,qtyOrder,qtyPerBox,deliveryDate,deliveryTime,cycle
+ORD-20260430-001,52651,GMSI,1347,53725-VT020,R/FFR SPRING SUPPORTNO.2,300,300,2026-05-04,08:00,1-1-1
