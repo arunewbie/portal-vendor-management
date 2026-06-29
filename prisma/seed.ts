@@ -1,4 +1,3 @@
-cat > prisma/seed.ts <<'EOF'
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -58,12 +57,18 @@ async function main() {
   });
 
   await prisma.kanban.upsert({
-    where: { kanbanNo: "1347" },
+    where: { partNo: "53725-VT020" },
     update: {
-      partNo: "53725-VT020",
+      kanbanNo: "1347",
       partName: "R/FFR SPRING SUPPORTNO.2",
       qtyPerBox: 300,
       supplierId: supplier.id,
+      deliveryPlace: "FII",
+      dockCode: "D02",
+      customerArea: "C-02-07",
+      boxType: "TP331",
+      storeAddress: "650 AS-1",
+      supplierFreeArea: "B22",
     },
     create: {
       kanbanNo: "1347",
@@ -71,18 +76,26 @@ async function main() {
       partName: "R/FFR SPRING SUPPORTNO.2",
       qtyPerBox: 300,
       supplierId: supplier.id,
+      deliveryPlace: "FII",
+      dockCode: "D02",
+      customerArea: "C-02-07",
+      boxType: "TP331",
+      storeAddress: "650 AS-1",
+      supplierFreeArea: "B22",
     },
   });
+
+  console.log("Seed completed successfully");
+  console.log("Admin login    : admin@fii.local / admin123");
+  console.log("Supplier login : supplier@gmsi.local / supplier123");
 }
 
 main()
   .then(async () => {
-    console.log("Seed completed");
     await prisma.$disconnect();
   })
-  .catch(async (e) => {
-    console.error(e);
+  .catch(async (error) => {
+    console.error(error);
     await prisma.$disconnect();
     process.exit(1);
   });
-EOF

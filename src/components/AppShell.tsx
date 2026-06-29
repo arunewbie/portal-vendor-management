@@ -1,4 +1,3 @@
-cat > src/components/AppShell.tsx <<'EOF'
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -12,16 +11,32 @@ import {
   Users,
   ClipboardPlus,
   LogOut,
+  UserCog,
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 
 const adminMenu = [
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "User Management", href: "/users", icon: UserCog },
+  { label: "Orders", href: "/orders", icon: Package },
+  { label: "Manual Order", href: "/manual-order", icon: ClipboardPlus },
+  { label: "Receiving", href: "/receiving", icon: Truck },
+  { label: "Suppliers", href: "/suppliers", icon: Users },
+  { label: "Kanban", href: "/kanban", icon: Factory },
+  { label: "Replace Kanban", href: "/kanban/replacement", icon: Package },
+  { label: "Calendar", href: "/calendar", icon: CalendarDays },
+  { label: "Forecast", href: "/forecast", icon: Upload },
+  { label: "Reports", href: "/reports/daily", icon: FileBarChart },
+];
+
+const internalMenu = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Orders", href: "/orders", icon: Package },
   { label: "Manual Order", href: "/manual-order", icon: ClipboardPlus },
   { label: "Receiving", href: "/receiving", icon: Truck },
   { label: "Suppliers", href: "/suppliers", icon: Users },
   { label: "Kanban", href: "/kanban", icon: Factory },
+  { label: "Replace Kanban", href: "/kanban/replacement", icon: Package },
   { label: "Calendar", href: "/calendar", icon: CalendarDays },
   { label: "Forecast", href: "/forecast", icon: Upload },
   { label: "Reports", href: "/reports/daily", icon: FileBarChart },
@@ -42,7 +57,12 @@ export default async function AppShell({
     redirect("/login");
   }
 
-  const menu = user.role === "SUPPLIER" ? supplierMenu : adminMenu;
+  const menu =
+    user.role === "ADMIN"
+      ? adminMenu
+      : user.role === "INTERNAL"
+      ? internalMenu
+      : supplierMenu;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -57,32 +77,44 @@ export default async function AppShell({
           </p>
         </div>
 
-        <nav className="flex-1 space-y-1">
-          {menu.map((m) => {
-            const Icon = m.icon;
+        <nav className="space-y-1">
+          {menu.map((item) => {
+            const Icon = item.icon;
 
             return (
               <Link
-                key={m.href}
-                href={m.href}
+                key={item.href}
+                href={item.href}
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white"
               >
                 <Icon size={18} />
-                {m.label}
+                {item.label}
               </Link>
             );
           })}
         </nav>
 
-        <form action="/api/auth/logout" method="post" className="mt-auto">
-          <button
-            type="submit"
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-300 hover:bg-red-900/40 hover:text-white"
-          >
-            <LogOut size={18} />
-            Logout
-          </button>
-        </form>
+        <div className="mt-auto pt-6">
+          <div className="mb-3 rounded-2xl bg-slate-900 p-3">
+            <p className="text-xs text-slate-400">Login as</p>
+            <p className="text-sm font-semibold text-white">
+              {user.role === "SUPPLIER"
+                ? user.supplier?.name ?? "Supplier"
+                : user.name}
+            </p>
+            <p className="text-xs text-slate-500">{user.role}</p>
+          </div>
+
+          <form action="/api/auth/logout" method="post">
+            <button
+              type="submit"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-700"
+            >
+              <LogOut size={18} />
+              Logout
+            </button>
+          </form>
+        </div>
       </aside>
 
       <main className="lg:pl-72">
@@ -94,10 +126,21 @@ export default async function AppShell({
               </p>
             </div>
 
-            <div className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
-              {user.role === "SUPPLIER"
-                ? user.supplier?.name ?? "Supplier"
-                : user.name}
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+                {user.role === "SUPPLIER"
+                  ? user.supplier?.name ?? "Supplier"
+                  : user.name}
+              </div>
+
+              <form action="/api/auth/logout" method="post">
+                <button
+                  type="submit"
+                  className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                >
+                  Logout
+                </button>
+              </form>
             </div>
           </div>
         </header>
@@ -107,4 +150,3 @@ export default async function AppShell({
     </div>
   );
 }
-EOF

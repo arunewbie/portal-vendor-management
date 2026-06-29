@@ -1,27 +1,28 @@
-cat > src/app/api/auth/login/route.ts <<'EOF'
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function POST(req: Request) {
-  const f = await req.formData();
+  const form = await req.formData();
 
-  const email = String(f.get("email") || "").toLowerCase().trim();
-  const password = String(f.get("password") || "");
+  const email = String(form.get("email") || "").toLowerCase().trim();
+  const password = String(form.get("password") || "");
 
   const user = await prisma.user.findUnique({
     where: { email },
-    include: { supplier: true },
+    include: {
+      supplier: true,
+    },
   });
 
   if (!user) {
     redirect("/login?error=1");
   }
 
-  const ok = await bcrypt.compare(password, user.passwordHash);
+  const passwordOk = await bcrypt.compare(password, user.passwordHash);
 
-  if (!ok) {
+  if (!passwordOk) {
     redirect("/login?error=1");
   }
 
@@ -48,6 +49,8 @@ export async function POST(req: Request) {
       path: "/",
       maxAge: 60 * 60 * 10,
     });
+  } else {
+    cookieStore.delete("sp_supplier");
   }
 
   if (user.role === "SUPPLIER") {
@@ -56,4 +59,3 @@ export async function POST(req: Request) {
 
   redirect("/dashboard");
 }
-EOF
